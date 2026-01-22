@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform, useScroll } from 'framer-motion';
 import { Command } from 'lucide-react';
+import SearchBar from '../components/SearchBar';
 import gsap from 'gsap';
 
 // --- content definitions ---
@@ -64,12 +65,14 @@ const heroContent = [
     }
 ];
 
-const Hero = () => {
+const Hero = ({ onIntroComplete, currentTheme = "SAMBA" }) => {
     // Animation Sequence State: 'grid' -> 'white-enter' -> 'final'
     const [animationStage, setAnimationStage] = useState('grid');
     const [placeholder, setPlaceholder] = useState("");
     const [activeIndex, setActiveIndex] = useState(0);
     const imagesRef = useRef([]);
+
+    const isNoir = currentTheme === "NOIR";
 
     // Mouse position for parallax effect
     const mouseX = useMotionValue(0);
@@ -145,6 +148,8 @@ const Hero = () => {
         return () => ctx.revert();
     }, [animationStage]); // Run once final stage is reached
 
+    // ... (previous code)
+
     useEffect(() => {
         // Sequence Timings
         const startSequence = async () => {
@@ -157,6 +162,11 @@ const Hero = () => {
             // 2.5s: Zoom Out / Reveal (Stage 3)
             await new Promise(r => setTimeout(r, 1500));
             setAnimationStage('final');
+
+            // Signal intro complete
+            if (onIntroComplete) {
+                setTimeout(() => onIntroComplete(), 800);
+            }
         };
 
         startSequence();
@@ -164,7 +174,6 @@ const Hero = () => {
         return () => window.removeEventListener('mousemove', handleMouseMove);
     }, []);
 
-    // ... variants ... (headerVariants, logoVariants) ...
     const headerVariants = {
         grid: { height: "100vh", opacity: 0, borderBottomLeftRadius: "0px", borderBottomRightRadius: "0px" },
         'white-enter': { height: "100vh", opacity: 1, borderBottomLeftRadius: "0px", borderBottomRightRadius: "0px" },
@@ -195,19 +204,17 @@ const Hero = () => {
     };
 
     return (
-        <div className="relative w-full min-h-screen bg-[#FDFBF7] font-sans text-gray-900 selection:bg-black selection:text-white flex flex-col overflow-hidden">
-
-            {/* --- TOP SECTION: WHITE BACKGROUND (Animated) --- */}
+        <div className={`relative w-full min-h-screen transition-colors duration-500 ${isNoir ? 'bg-transparent text-white' : 'bg-transparent text-gray-900 selection:bg-black selection:text-white'} flex flex-col overflow-hidden`}>
+            {/* ... (Top Section) ... */}
             <motion.div
-                className="relative z-30 bg-white w-full flex flex-col justify-end shadow-sm"
+                className={`relative z-30 w-full flex flex-col justify-end shadow-sm transition-colors duration-500 ${isNoir ? 'bg-[#0a0a0a]' : 'bg-white'}`}
                 initial="grid"
                 animate={animationStage}
                 variants={headerVariants}
             >
-                {/* LOGO & HERO TEXT CONTAINER */}
+                {/* ... */}
                 <div className="w-full max-w-[1800px] mx-auto px-8 md:px-12 flex flex-col md:flex-row items-stretch gap-16 md:gap-96 pt-20 md:pt-26 pb-8 md:pb-12">
-
-                    {/* LEFT: TRACE LOGO */}
+                    {/* ... (Logos & Text) ... */}
                     <div className="flex-1 flex items-start">
                         <motion.div variants={logoVariants} className="origin-top-left">
                             <h1 className="text-[13rem] md:text-[17rem] leading-[0.75] font-bold tracking-tighter -ml-2 select-none whitespace-nowrap">
@@ -216,7 +223,6 @@ const Hero = () => {
                         </motion.div>
                     </div>
 
-                    {/* RIGHT: TEXT & BUTTON */}
                     <motion.div
                         className="flex-1 flex flex-col justify-between items-start"
                         variants={contentVariants}
@@ -224,16 +230,15 @@ const Hero = () => {
                         animate={animationStage === 'final' ? "visible" : "hidden"}
                     >
                         {/* Top Text */}
-                        <h2 className="text-3xl md:text-3.5xl font-movatif font-medium leading-[1.1] tracking-tight pt-6 md:pt-0">
+                        <h2 className="text-3xl md:text-3.5xl font-neueHaas font-medium leading-[1.1] tracking-tight pt-6 md:pt-0">
                             The Creative Sidekick<br />
                             <RotatingText words={["Made for Designers.", "Made for Agencies.", "Made for Storytellers."]} />
                             <br />
                             Built for Storytellers.
                         </h2>
-
                         {/* Bottom Button */}
-                        {/* Bottom Button */}
-                        <button className="group flex items-center gap-3 bg-black p-2 pr-5 rounded-xl cursor-pointer hover:scale-105 transition-transform duration-300">
+                        <button className={`group flex items-center gap-3 p-2 pr-5 rounded-xl cursor-pointer hover:scale-105 transition-all duration-300 ${isNoir ? 'bg-white text-black' : 'bg-black text-white'}`}>
+                            {/* ... */}
                             <div className="w-12 h-12 bg-[#FCD34D] rounded-lg flex items-center justify-center overflow-hidden relative">
                                 <img
                                     src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80"
@@ -242,7 +247,7 @@ const Hero = () => {
                                 />
                             </div>
                             <span className="font-ikicompressedlight text-xs md:text-sm tracking-wide relative">
-                                <span className="text-white">Start Creating</span>
+                                <span>Start Creating</span>
                             </span>
                         </button>
                     </motion.div>
@@ -251,14 +256,25 @@ const Hero = () => {
 
             {/* --- BOTTOM SECTION: FLOATING IMAGES & GRID (Parallax) --- */}
             <div className="absolute inset-0 z-0 pt-[40vh]">
-                {/* Simple Grid Background */}
-                <div className="absolute inset-0"
-                    style={{
-                        backgroundImage: `linear-gradient(#E5E5E5 1px, transparent 1px), linear-gradient(90deg, #E5E5E5 1px, transparent 1px), radial-gradient(circle at 1px 1px, #D4D4D4 3px, transparent 3px)`,
-                        backgroundSize: '60px 60px',
-                        opacity: 0.6
-                    }}
-                ></div>
+                {/* Grid is handled in LandingPage, but Hero has this overlay div? */}
+                {/* The original code had a grid div here. In Noir mode, we might want it invisible or different */}
+                {/* LandingPage adds a global grid. If we keep this, we get double grids. */}
+                {/* Given the refactoring, let's make this transparent or remove it if LandingPage covers it. */}
+                {/* LandingPage's grid covers the whole screen 'absolute inset-0'. Hero is z-10 on LandingPage. */}
+                {/* Hero's grid div inside 'absolute inset-0 z-0' within Hero. */}
+                {/* If LandingPage provides the grid, we can remove it here or hide it. Let's hide it to avoid conflict. */}
+                {/* Actually, let's keep it but make it transparent so we don't break layout if it holds space? No, it is absolute. */}
+
+                {/* --- SEARCH BAR (Typewriter) --- */}
+                {animationStage === 'final' && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.8 }}
+                    >
+                        <ScrollOpacitySearchBar placeholder={placeholder} currentTheme={currentTheme} />
+                    </motion.div>
+                )}
 
                 {/* --- DYNAMIC PARALLAX IMAGES --- */}
                 <AnimatePresence>
@@ -271,8 +287,8 @@ const Hero = () => {
                                             key={imgIndex}
                                             x={smoothX}
                                             y={smoothY}
-                                            speed={(imgIndex + 1) * 5} // Vary speeds
-                                            className={`${img.className} parallax-target opacity-0 scale-0`} // Helper classes for GSAP
+                                            speed={(imgIndex + 1) * 5}
+                                            className={`${img.className} parallax-target opacity-0 scale-0`}
                                         >
                                             <div className="w-full h-full overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-500">
                                                 <img src={img.src} className="w-full h-full object-cover" alt="Visual" />
@@ -285,38 +301,10 @@ const Hero = () => {
                     )}
                 </AnimatePresence>
 
-                {/* --- SEARCH BAR --- */}
-                {animationStage === 'final' && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.8 }}
-                    >
-                        <div className="absolute left-0 right-0 top-[73%] flex justify-center pointer-events-auto z-50">
-                            <div className="bg-[#DFDFDF] w-full max-w-[850px] mx-4 rounded-full p-1.5 pl-6 flex items-center shadow-lg border border-gray-200/50 hover:shadow-xl transition-all duration-300 backdrop-blur-sm bg-opacity-95">
-                                <input
-                                    type="text"
-                                    placeholder={placeholder}
-                                    className="flex-1 bg-transparent border-none outline-none font-ikiCondensedThin font-regular text-base md:text-[16px] text-[#000000] placeholder-black tracking-wider h-14 px-2 uppercase"
-                                />
-                                <button className="bg-white h-14 px-6 rounded-full text-sm font-ppneue font-regular tracking-widest flex text-[#000000] items-center gap-2 border border-gray-200 hover:bg-gray-50 transition-colors shadow-sm cursor-pointer">
-                                    SEARCH
-                                    <div className="flex items-center text-lg text-gray-400 gap-0.5">
-                                        <Command size={17} />
-                                        <span>/</span>
-                                    </div>
-                                </button>
-                            </div>
-                        </div>
-                    </motion.div>
-                )}
-
             </div>
         </div>
     );
 };
-
-/* --- Subcomponents --- */
 
 const RotatingText = ({ words }) => {
     const [index, setIndex] = useState(0);
@@ -357,6 +345,17 @@ const ParallaxImage = ({ className, x, y, speed, children }) => {
             className={className}
         >
             {children}
+        </motion.div>
+    );
+};
+
+const ScrollOpacitySearchBar = ({ placeholder, currentTheme }) => {
+    const { scrollY } = useScroll();
+    const opacity = useTransform(scrollY, [0, 300], [1, 0]);
+
+    return (
+        <motion.div style={{ opacity }} className="absolute left-0 right-0 top-[73%] z-40">
+            <SearchBar placeholder={placeholder} currentTheme={currentTheme} />
         </motion.div>
     );
 };
