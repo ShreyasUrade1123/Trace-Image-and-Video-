@@ -9,12 +9,13 @@ import Working from '../sections/Working';
 import Features from '../sections/Features';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import useThemeStore from '../store/themeStore';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const LandingPage = () => {
     const [isHeroReady, setIsHeroReady] = useState(false);
-    const [currentTheme, setCurrentTheme] = useState("NOIR");
+    const { currentTheme } = useThemeStore();
     const searchBarRef = useRef(null);
     const heroRef = useRef(null);
 
@@ -50,7 +51,7 @@ const LandingPage = () => {
             {/* Grid Pattern */}
             <div className="absolute inset-0 w-full h-full pointer-events-none z-0" style={{ backgroundImage: `linear-gradient(${activeStyle.gridColor || '#E5E5E5'} 1px, transparent 1px), linear-gradient(90deg, ${activeStyle.gridColor || '#E5E5E5'} 1px, transparent 1px), radial-gradient(circle at 1px 1px, ${activeStyle.radialColor || '#D4D4D4'} 3px, transparent 3px)`, backgroundSize: '60px 60px', opacity: activeStyle.gridOpacity }}></div>
 
-            <Header currentTheme={currentTheme} setCurrentTheme={setCurrentTheme} />
+            <Header />
 
             <main className="relative z-10 flex-1 w-full">
                 <div ref={heroRef} className="relative">

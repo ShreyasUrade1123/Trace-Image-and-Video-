@@ -2,8 +2,10 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check } from 'lucide-react';
+import useThemeStore from '../store/themeStore';
 
-const Header = ({ currentTheme, setCurrentTheme }) => {
+const Header = () => {
+    const { currentTheme, setCurrentTheme } = useThemeStore();
     const navigate = useNavigate();
     const location = useLocation();
     const [isScrolled, setIsScrolled] = React.useState(false);
