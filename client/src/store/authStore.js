@@ -3,20 +3,41 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:3000/api';
 
-const useAuthStore = create((set) => ({
-  user: JSON.parse(localStorage.getItem('user')) || null,
-  token: localStorage.getItem('token') || null,
-  isAuthenticated: !!localStorage.getItem('token'),
+// Configure axios to send cookies with every request
+axios.defaults.withCredentials = true;
+
+const useAuthStore = create((set, get) => ({
+  user: null,
+  isAuthenticated: false,
+  isLoading: true, // Start as loading to check auth on mount
+  
+  // Check if user is authenticated by calling /api/auth/me
+  checkAuth: async () => {
+    try {
+      const response = await axios.get(`${API_URL}/auth/me`);
+      set({ 
+        user: response.data.user, 
+        isAuthenticated: true, 
+        isLoading: false 
+      });
+      return { success: true };
+    } catch (error) {
+      // Not authenticated or cookie expired
+      set({ 
+        user: null, 
+        isAuthenticated: false, 
+        isLoading: false 
+      });
+      return { success: false };
+    }
+  },
   
   login: async (email, password) => {
     try {
       const response = await axios.post(`${API_URL}/auth/login`, { email, password });
-      const { user, token } = response.data;
+      const { user } = response.data;
       
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('token', token);
-      
-      set({ user, token, isAuthenticated: true });
+      set({ user, isAuthenticated: true });
       return { success: true };
     } catch (error) {
       return { success: false, error: error.response?.data?.error || 'Login failed' };
@@ -26,22 +47,23 @@ const useAuthStore = create((set) => ({
   signup: async (email, password, name) => {
     try {
       const response = await axios.post(`${API_URL}/auth/register`, { email, password, name });
-      const { user, token } = response.data;
+      const { user } = response.data;
       
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('token', token);
-      
-      set({ user, token, isAuthenticated: true });
+      set({ user, isAuthenticated: true });
       return { success: true };
     } catch (error) {
       return { success: false, error: error.response?.data?.error || 'Signup failed' };
     }
   },
 
-  logout: () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    set({ user: null, token: null, isAuthenticated: false });
+  logout: async () => {
+    try {
+      await axios.post(`${API_URL}/auth/logout`);
+    } catch (error) {
+      // Even if the request fails, clear local state
+      console.error('Logout error:', error);
+    }
+    set({ user: null, isAuthenticated: false });
   },
 }));
 

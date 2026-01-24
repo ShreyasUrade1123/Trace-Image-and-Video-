@@ -11,14 +11,18 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=3000
-      - DB_DIALECT=sqlite
-      - DB_STORAGE=/app/data/skydocs.db
+      - DB_DIALECT=postgres
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=skydocs
+      - DB_USER=myuser
+      - DB_PASSWORD=mypassword
       - JWT_SECRET=change-this-in-production
     volumes:
-      - ../server/data:/app/data
       - ../server/uploads:/app/uploads
     depends_on:
       - redis
+      - postgres
 
   # React Frontend (dev mode)
   web-client:
@@ -68,5 +72,24 @@ services:
     volumes:
       - redis_data:/data
 
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=myuser
+      - POSTGRES_PASSWORD=mypassword
+      - POSTGRES_DB=skydocs
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U myuser -d skydocs" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
 volumes:
   redis_data:
+  postgres_data:

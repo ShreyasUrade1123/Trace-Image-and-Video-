@@ -3,21 +3,36 @@ import { useNavigate, Link } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import { motion } from 'framer-motion';
 
-const Login = () => {
+const Register = () => {
+    const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
-    const { login } = useAuthStore();
+    const { signup } = useAuthStore();
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+
+        // Validate passwords match
+        if (password !== confirmPassword) {
+            setError('Passwords do not match');
+            return;
+        }
+
+        // Validate password strength
+        if (password.length < 8) {
+            setError('Password must be at least 8 characters');
+            return;
+        }
+
         setIsLoading(true);
 
-        const result = await login(email, password);
+        const result = await signup(email, password, name);
 
         setIsLoading(false);
 
@@ -33,9 +48,9 @@ const Login = () => {
 
             {/* --- Ambient Background --- */}
             {/* Gradient Orbs */}
-            <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-400/20 rounded-full blur-[100px] mix-blend-multiply opacity-70 animate-blob" />
-            <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-purple-400/20 rounded-full blur-[100px] mix-blend-multiply opacity-70 animate-blob animation-delay-2000" />
-            <div className="absolute bottom-[-20%] left-[20%] w-[600px] h-[600px] bg-pink-400/20 rounded-full blur-[120px] mix-blend-multiply opacity-70 animate-blob animation-delay-4000" />
+            <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-emerald-400/20 rounded-full blur-[100px] mix-blend-multiply opacity-70 animate-blob" />
+            <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-400/20 rounded-full blur-[100px] mix-blend-multiply opacity-70 animate-blob animation-delay-2000" />
+            <div className="absolute bottom-[-20%] left-[20%] w-[600px] h-[600px] bg-purple-400/20 rounded-full blur-[120px] mix-blend-multiply opacity-70 animate-blob animation-delay-4000" />
 
             {/* Grid Pattern Mesh */}
             <div className="absolute inset-0 pointer-events-none opacity-80"
@@ -64,10 +79,10 @@ const Login = () => {
                             animate={{ opacity: 1, y: 0 }}
                             className="font-neueHaas font-medium text-4xl md:text-5xl text-black tracking-tight mb-3"
                         >
-                            Welcome back.
+                            Create account.
                         </motion.h2>
                         <p className="font-neueHaas text-gray-500 text-lg leading-snug">
-                            Enter your credentials to access your workspace.
+                            Join the platform and start building.
                         </p>
                     </div>
 
@@ -82,6 +97,20 @@ const Login = () => {
                     )}
 
                     <form onSubmit={handleSubmit} className="space-y-6">
+                        <div className="group">
+                            <label className="block font-iki text-[10px] uppercase tracking-[0.2em] text-gray-400 mb-2 group-focus-within:text-black transition-colors">
+                                Full Name
+                            </label>
+                            <input
+                                type="text"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                className="w-full bg-white/50 border border-gray-200/50 rounded-xl px-4 py-3.5 font-neueHaas text-lg text-black focus:border-black/20 focus:bg-white focus:ring-4 focus:ring-black/5 outline-none transition-all placeholder-gray-300"
+                                placeholder="John Doe"
+                                required
+                            />
+                        </div>
+
                         <div className="group">
                             <label className="block font-iki text-[10px] uppercase tracking-[0.2em] text-gray-400 mb-2 group-focus-within:text-black transition-colors">
                                 Email Address
@@ -107,6 +136,22 @@ const Login = () => {
                                 className="w-full bg-white/50 border border-gray-200/50 rounded-xl px-4 py-3.5 font-neueHaas text-xl text-black focus:border-black/20 focus:bg-white focus:ring-4 focus:ring-black/5 outline-none transition-all placeholder-gray-300 tracking-widest"
                                 placeholder="••••••••"
                                 required
+                                minLength={8}
+                            />
+                            <p className="text-xs text-gray-400 mt-1.5 font-neueHaas">Minimum 8 characters</p>
+                        </div>
+
+                        <div className="group">
+                            <label className="block font-iki text-[10px] uppercase tracking-[0.2em] text-gray-400 mb-2 group-focus-within:text-black transition-colors">
+                                Confirm Password
+                            </label>
+                            <input
+                                type="password"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                className="w-full bg-white/50 border border-gray-200/50 rounded-xl px-4 py-3.5 font-neueHaas text-xl text-black focus:border-black/20 focus:bg-white focus:ring-4 focus:ring-black/5 outline-none transition-all placeholder-gray-300 tracking-widest"
+                                placeholder="••••••••"
+                                required
                             />
                         </div>
 
@@ -121,11 +166,11 @@ const Login = () => {
                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                                     </svg>
-                                    Signing In...
+                                    Creating Account...
                                 </span>
                             ) : (
                                 <>
-                                    <span>Sign In</span>
+                                    <span>Create Account</span>
                                     <span className="group-hover:translate-x-1 transition-transform">→</span>
                                 </>
                             )}
@@ -134,12 +179,12 @@ const Login = () => {
 
                     <div className="mt-8 text-center">
                         <p className="font-neueHaas text-gray-500 text-sm">
-                            New to SkyDocs?{' '}
+                            Already have an account?{' '}
                             <Link
-                                to="/register"
+                                to="/login"
                                 className="text-black font-medium hover:underline decoration-1 underline-offset-2 transition-all"
                             >
-                                Sign Up
+                                Log In
                             </Link>
                         </p>
                     </div>
@@ -155,4 +200,4 @@ const Login = () => {
     );
 };
 
-export default Login;
+export default Register;

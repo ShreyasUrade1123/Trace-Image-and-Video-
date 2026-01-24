@@ -3,13 +3,21 @@ const { User } = require('../models');
 
 const auth = async (req, res, next) => {
   try {
-    const authHeader = req.headers.authorization;
+    // Try to get token from cookie first, then fall back to Authorization header
+    let token = req.cookies?.token;
     
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    // Fallback to Authorization header for API clients
+    if (!token) {
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.split(' ')[1];
+      }
+    }
+
+    if (!token) {
       return res.status(401).json({ error: 'Authentication required' });
     }
 
-    const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
     const user = await User.findByPk(decoded.userId);
@@ -22,7 +30,16 @@ const auth = async (req, res, next) => {
     next();
   } catch (error) {
     console.error('Auth error:', error.message);
-    res.status(401).json({ error: 'Invalid token' });
+    
+    // Clear invalid cookie
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+    });
+    
+    res.status(401).json({ error: 'Invalid or expired token' });
   }
 };
 

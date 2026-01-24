@@ -207,7 +207,7 @@ const Hero = ({ onIntroComplete, currentTheme = "SAMBA" }) => {
         <div className={`relative w-full min-h-screen transition-colors duration-500 ${isNoir ? 'bg-transparent text-white' : 'bg-transparent text-gray-900 selection:bg-black selection:text-white'} flex flex-col overflow-hidden`}>
             {/* ... (Top Section) ... */}
             <motion.div
-                className={`relative z-30 w-full flex flex-col justify-end shadow-sm transition-colors duration-500 ${isNoir ? 'bg-[#0a0a0a]' : 'bg-white'}`}
+                className={`relative z-30 w-full flex flex-col justify-end shadow-sm transition-colors duration-500 ${isNoir ? 'bg-[#141414]' : 'bg-white'}`}
                 initial="grid"
                 animate={animationStage}
                 variants={headerVariants}
